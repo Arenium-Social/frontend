@@ -2,7 +2,6 @@
 
 import * as React from "react"
 import Link from "next/link"
-
 import { cn } from "@/lib/utils"
 import {
   NavigationMenu,
@@ -14,152 +13,191 @@ import {
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu"
 import { DynamicWidget } from "@dynamic-labs/sdk-react-core"
-import ThemeButton from "./themebutton"
+import { Sword, Trophy, Ticket, TrendingUp, Menu, X } from "lucide-react"
 
-const components: { title: string; href: string; description: string }[] = [
+const markets: { title: string; href: string; description: string; icon: React.ReactNode }[] = [
   {
-    title: "Alert Dialog",
-    href: "/docs/primitives/alert-dialog",
-    description:
-      "A modal dialog that interrupts the user with important content and expects a response.",
+    title: "Memecoin Markets",
+    href: "#",
+    description: "Predict and bet on price movements of Arena-launched memecoins.",
+    icon: <TrendingUp className="w-4 h-4 text-[#d64d06]" />
   },
   {
-    title: "Hover Card",
-    href: "/docs/primitives/hover-card",
-    description:
-      "For sighted users to preview content available behind a link.",
+    title: "Ticket Markets",
+    href: "#",
+    description: "Trade predictions on user ticket values within The Arena ecosystem.",
+    icon: <Ticket className="w-4 h-4 text-[#d64d06]" />
   },
   {
-    title: "Progress",
-    href: "/docs/primitives/progress",
-    description:
-      "Displays an indicator showing the completion progress of a task, typically displayed as a progress bar.",
-  },
-  {
-    title: "Scroll-area",
-    href: "/docs/primitives/scroll-area",
-    description: "Visually or semantically separates content.",
-  },
-  {
-    title: "Tabs",
-    href: "/docs/primitives/tabs",
-    description:
-      "A set of layered sections of content—known as tab panels—that are displayed one at a time.",
-  },
-  {
-    title: "Tooltip",
-    href: "/docs/primitives/tooltip",
-    description:
-      "A popup that displays information related to an element when the element receives keyboard focus or the mouse hovers over it.",
-  },
+    title: "Event Markets",
+    href: "#",
+    description: "Participate in predictions for sports and cultural events.",
+    icon: <Trophy className="w-4 h-4 text-[#d64d06]" />
+  }
 ]
 
 export default function NavBar() {
+  const [isMenuOpen, setIsMenuOpen] = React.useState(false)
+
+  const scrollToSection = (elementId: string) => {
+    const element = document.getElementById(elementId)
+    if (element) {
+      const offset = 80
+      const bodyRect = document.body.getBoundingClientRect().top
+      const elementRect = element.getBoundingClientRect().top
+      const elementPosition = elementRect - bodyRect
+      const offsetPosition = elementPosition - offset
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      })
+      setIsMenuOpen(false)
+    }
+  }
+
   return (
-    <div className="w-full border-b p-2">
-      <div className="container mx-auto flex justify-between">
-        <NavigationMenu className="max-w-none w-full">
-          <NavigationMenuList className="w-full justify-between">
-            <NavigationMenuItem>
-              <Link href="/" legacyBehavior passHref>
-                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                  Home
-                </NavigationMenuLink>
-              </Link>
-            </NavigationMenuItem>
+    <nav className="fixed w-full border-b border-[#d64d06]/20 backdrop-blur-lg z-50">
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between h-16">
+          {/* Logo - Left */}
+          <Link href="/" className="flex items-center gap-2 shrink-0 w-[150px]">
+            <Sword className="w-6 h-6 text-[#d64d06]" />
+            <span className="text-xl font-bold bg-gradient-to-r from-[#d64d06] to-[#ff6b1a] text-transparent bg-clip-text">
+              ARENIUM
+            </span>
+            <Sword className="w-6 h-6 text-[#d64d06] scale-x-[-1]" />
+          </Link>
 
-            <div className="flex items-center gap-2">
-              <NavigationMenuItem>
-                <NavigationMenuTrigger>Getting started</NavigationMenuTrigger>
-                <NavigationMenuContent>
-                  <ul className="grid gap-3 p-4 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
-                    <li className="row-span-3">
-                      <NavigationMenuLink asChild>
-                        <a
-                          className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md"
-                          href="/"
+          {/* Navigation - Center (Hidden on mobile) */}
+          <div className="hidden md:flex flex-1 justify-center">
+            <NavigationMenu>
+              <NavigationMenuList className="gap-4">
+                <NavigationMenuItem>
+                  <NavigationMenuTrigger className="text-white/70 hover:text-white">
+                    Markets
+                  </NavigationMenuTrigger>
+                  <NavigationMenuContent>
+                    <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-1">
+                      {markets.map((market) => (
+                        <ListItem
+                          key={market.title}
+                          title={market.title}
+                          href={market.href}
+                          icon={market.icon}
                         >
-                          <div className="mb-2 mt-4 text-lg font-medium">
-                            shadcn/ui
-                          </div>
-                          <p className="text-sm leading-tight text-muted-foreground">
-                            Beautifully designed components built with Radix UI and
-                            Tailwind CSS.
-                          </p>
-                        </a>
-                      </NavigationMenuLink>
-                    </li>
-                    <ListItem href="/docs" title="Introduction">
-                      Re-usable components built using Radix UI and Tailwind CSS.
-                    </ListItem>
-                    <ListItem href="/docs/installation" title="Installation">
-                      How to install dependencies and structure your app.
-                    </ListItem>
-                    <ListItem href="/docs/primitives/typography" title="Typography">
-                      Styles for headings, paragraphs, lists...etc
-                    </ListItem>
-                  </ul>
-                </NavigationMenuContent>
-              </NavigationMenuItem>
+                          {market.description}
+                        </ListItem>
+                      ))}
+                    </ul>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
 
-              <NavigationMenuItem>
-                <NavigationMenuTrigger>Components</NavigationMenuTrigger>
-                <NavigationMenuContent>
-                  <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
-                    {components.map((component) => (
-                      <ListItem
-                        key={component.title}
-                        title={component.title}
-                        href={component.href}
-                      >
-                        {component.description}
-                      </ListItem>
-                    ))}
-                  </ul>
-                </NavigationMenuContent>
-              </NavigationMenuItem>
+                <NavigationMenuItem>
+                  <button 
+                    onClick={() => scrollToSection('features')}
+                    className={cn(navigationMenuTriggerStyle(), "text-white/70 hover:text-white")}
+                  >
+                    Features
+                  </button>
+                </NavigationMenuItem>
 
-              <NavigationMenuItem>
-                <Link href="/docs" legacyBehavior passHref>
-                  <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                    Documentation
-                  </NavigationMenuLink>
-                </Link>
-              </NavigationMenuItem>
+                <NavigationMenuItem>
+                  <button 
+                    onClick={() => scrollToSection('how-it-works')}
+                    className={cn(navigationMenuTriggerStyle(), "text-white/70 hover:text-white")}
+                  >
+                    How It Works
+                  </button>
+                </NavigationMenuItem>
+              </NavigationMenuList>
+            </NavigationMenu>
+          </div>
+
+          {/* Dynamic Widget - Right */}
+          <div className="shrink-0 w-[150px] flex justify-end">
+            {/* Hamburger for mobile */}
+            <button 
+              className="md:hidden text-white/70 hover:text-white"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+            >
+              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+            {/* Widget for desktop */}
+            <div className="hidden md:block">
+              <DynamicWidget innerButtonComponent={<p>Login</p>} />
             </div>
+          </div>
+        </div>
 
-            <div className="flex items-center gap-2">
-              <NavigationMenuItem>
-                <ThemeButton />
-              </NavigationMenuItem>
-              <NavigationMenuItem>
+        {/* Mobile Menu */}
+        {isMenuOpen && (
+          <div className="md:hidden border-t border-[#d64d06]/20">
+            <div className="flex flex-col py-4 space-y-4">
+              <div className="px-4">
+                <button 
+                  className="text-white/70 hover:text-white w-full text-left py-2"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Markets
+                </button>
+                <div className="pl-4 space-y-2 mt-2">
+                  {markets.map((market) => (
+                    <a 
+                      key={market.title}
+                      href={market.href}
+                      className="flex items-center gap-2 text-white/70 hover:text-white py-1"
+                    >
+                      {market.icon}
+                      <span>{market.title}</span>
+                    </a>
+                  ))}
+                </div>
+              </div>
+              <button 
+                onClick={() => scrollToSection('features')}
+                className="px-4 text-white/70 hover:text-white text-left py-2"
+              >
+                Features
+              </button>
+              <button 
+                onClick={() => scrollToSection('how-it-works')}
+                className="px-4 text-white/70 hover:text-white text-left py-2"
+              >
+                How It Works
+              </button>
+              {/* Widget for mobile */}
+              <div className="px-4 pt-2">
                 <DynamicWidget />
-              </NavigationMenuItem>
+              </div>
             </div>
-          </NavigationMenuList>
-        </NavigationMenu>
+          </div>
+        )}
       </div>
-    </div>
+    </nav>
   )
 }
 
 const ListItem = React.forwardRef<
   React.ElementRef<"a">,
-  React.ComponentPropsWithoutRef<"a">
->(({ className, title, children, ...props }, ref) => {
+  React.ComponentPropsWithoutRef<"a"> & { icon?: React.ReactNode }
+>(({ className, title, children, icon, ...props }, ref) => {
   return (
     <li>
       <NavigationMenuLink asChild>
         <a
           ref={ref}
           className={cn(
-            "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
+            "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-[#d64d06]/10",
             className
           )}
           {...props}
         >
-          <div className="text-sm font-medium leading-none">{title}</div>
-          <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+          <div className="flex items-center gap-2 mb-2">
+            {icon}
+            <div className="text-sm font-medium leading-none text-[#d64d06]">{title}</div>
+          </div>
+          <p className="line-clamp-2 text-sm leading-snug text-white/70">
             {children}
           </p>
         </a>
@@ -168,3 +206,4 @@ const ListItem = React.forwardRef<
   )
 })
 ListItem.displayName = "ListItem"
+
