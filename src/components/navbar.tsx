@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/navigation-menu"
 import { DynamicWidget } from "@dynamic-labs/sdk-react-core"
 import { Sword, Trophy, Ticket, TrendingUp, Menu, X } from "lucide-react"
+import { ModeToggle } from "./themebutton"
 
 const markets: { title: string; href: string; description: string; icon: React.ReactNode }[] = [
   {
@@ -57,7 +58,7 @@ export default function NavBar() {
   }
 
   return (
-    <nav className="fixed w-full border-b border-[#d64d06]/20 backdrop-blur-lg z-50">
+    <nav className="fixed w-full border-b border-[#d64d06]/20 backdrop-blur-lg z-50 bg-background/80">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo - Left */}
@@ -74,7 +75,7 @@ export default function NavBar() {
             <NavigationMenu>
               <NavigationMenuList className="gap-4">
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger className="text-white/70 hover:text-white">
+                  <NavigationMenuTrigger className="text-foreground/70 hover:text-foreground">
                     Markets
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
@@ -96,7 +97,7 @@ export default function NavBar() {
                 <NavigationMenuItem>
                   <button 
                     onClick={() => scrollToSection('features')}
-                    className={cn(navigationMenuTriggerStyle(), "text-white/70 hover:text-white")}
+                    className={cn(navigationMenuTriggerStyle(), "text-foreground/70 hover:text-foreground")}
                   >
                     Features
                   </button>
@@ -105,7 +106,7 @@ export default function NavBar() {
                 <NavigationMenuItem>
                   <button 
                     onClick={() => scrollToSection('how-it-works')}
-                    className={cn(navigationMenuTriggerStyle(), "text-white/70 hover:text-white")}
+                    className={cn(navigationMenuTriggerStyle(), "text-foreground/70 hover:text-foreground")}
                   >
                     How It Works
                   </button>
@@ -115,14 +116,18 @@ export default function NavBar() {
           </div>
 
           {/* Dynamic Widget - Right */}
-          <div className="shrink-0 w-[150px] flex justify-end">
+          <div className="shrink-0 w-[150px] flex justify-end items-center gap-2">
             {/* Hamburger for mobile */}
             <button 
-              className="md:hidden text-white/70 hover:text-white"
+              className="md:hidden text-foreground/70 hover:text-foreground"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
               {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
+            {/* Theme button for desktop */}
+            <div className="hidden md:block">
+              <ModeToggle />
+            </div>
             {/* Widget for desktop */}
             <div className="hidden md:block">
               <DynamicWidget innerButtonComponent={<p>Login</p>} />
@@ -136,7 +141,7 @@ export default function NavBar() {
             <div className="flex flex-col py-4 space-y-4">
               <div className="px-4">
                 <button 
-                  className="text-white/70 hover:text-white w-full text-left py-2"
+                  className="text-foreground/70 hover:text-foreground w-full text-left py-2"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Markets
@@ -146,7 +151,7 @@ export default function NavBar() {
                     <a 
                       key={market.title}
                       href={market.href}
-                      className="flex items-center gap-2 text-white/70 hover:text-white py-1"
+                      className="flex items-center gap-2 text-foreground/70 hover:text-foreground py-1"
                     >
                       {market.icon}
                       <span>{market.title}</span>
@@ -156,17 +161,17 @@ export default function NavBar() {
               </div>
               <button 
                 onClick={() => scrollToSection('features')}
-                className="px-4 text-white/70 hover:text-white text-left py-2"
+                className="px-4 text-foreground/70 hover:text-foreground text-left py-2"
               >
                 Features
               </button>
               <button 
                 onClick={() => scrollToSection('how-it-works')}
-                className="px-4 text-white/70 hover:text-white text-left py-2"
+                className="px-4 text-foreground/70 hover:text-foreground text-left py-2"
               >
                 How It Works
               </button>
-              {/* Widget for mobile */}
+              <ModeToggle />
               <div className="px-4 pt-2">
                 <DynamicWidget />
               </div>

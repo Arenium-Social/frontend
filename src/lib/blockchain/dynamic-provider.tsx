@@ -7,12 +7,14 @@ import { DynamicWagmiConnector } from "@dynamic-labs/wagmi-connector";
 import { createConfig, WagmiProvider } from "wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { http } from "viem";
-import { avalancheFuji, avalanche } from "viem/chains";
+// import { avalancheFuji, avalanche } from "viem/chains";
+import { baseSepolia } from "viem/chains";
 import { EthereumWalletConnectors } from "@dynamic-labs/ethereum";
 import { ReactNode } from "react";
 
 const evmNetworks = [
-  {
+  // Commenting out Avalanche networks for now
+  /*{
     "blockExplorerUrls": ["https://snowtrace.io/"],
     "chainId": 43114,
     "chainName": "Avalanche Mainnet",
@@ -43,15 +45,30 @@ const evmNetworks = [
     "networkId": 43113,
     "rpcUrls": ["https://api.avax-test.network/ext/bc/C/rpc"],
     "vanityName": "Avalanche Fuji"
+  }*/
+  {
+    "blockExplorerUrls": ["https://sepolia.basescan.org/"],
+    "chainId": 84532,
+    "chainName": "Base Sepolia",
+    "iconUrls": ["https://raw.githubusercontent.com/ethereum-optimism/brand-kit/main/assets/svg/Base_Network_Logo.svg"],
+    "name": "Base Sepolia",
+    "nativeCurrency": {
+        "decimals": 18,
+        "name": "Ether",
+        "symbol": "ETH",
+        "iconUrl": "https://raw.githubusercontent.com/ethereum-optimism/brand-kit/main/assets/svg/Base_Network_Logo.svg"
+    },
+    "networkId": 84532,
+    "rpcUrls": ["https://sepolia.base.org"],
+    "vanityName": "Base Sepolia"
   }
 ];
 
 const config = createConfig({
-  chains: [avalancheFuji, avalanche],
+  chains: [baseSepolia],
   multiInjectedProviderDiscovery: false,
   transports: {
-    [avalancheFuji.id]: http(),
-    [avalanche.id]: http(),
+    [baseSepolia.id]: http(),
   },
 });
 

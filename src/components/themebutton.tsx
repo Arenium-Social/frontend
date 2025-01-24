@@ -1,6 +1,9 @@
 "use client"
+
+import * as React from "react"
 import { Moon, MoonIcon, Sun } from "lucide-react"
 import { useTheme } from "next-themes"
+
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -9,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
-export default function ThemeButton() {
+export function ModeToggle() {
   const { setTheme } = useTheme()
 
   return (
@@ -27,6 +30,9 @@ export default function ThemeButton() {
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setTheme("dark")}>
           Dark
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme("system")}>
+          System
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
