@@ -4,7 +4,7 @@ import { ThemeProvider } from "@/lib/theme-provider";
 import DynamicProvider from "@/lib/blockchain/dynamic-provider";
 import NavBar from "@/components/navbar";
 import { TransactionProvider } from "@/lib/transaction-provider";
-import NotificationList from "@/components/notificationList";
+import NotificationList from "@/components/notificationlist";
 
 export const metadata: Metadata = {
   title: "Prediction Market",

@@ -9,6 +9,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { UNISWAP_V3_AMM_CONTRACT } from "@/lib/blockchain/contracts"
 import { parseEther } from "viem"
 import { useTransactionContext } from "@/lib/transaction-provider"
+import { useReadContract } from "wagmi"
+import { formatUnits } from "viem"
 
 interface TradingInterfaceProps {
   marketId: `0x${string}`

@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation"
 import { useReadContract } from "wagmi"
-import { PREDICTION_MARKET_CONTRACT, UNISWAP_V3_AMM_CONTRACT, type MarketData, type PoolData } from "@/lib/blockchain/contracts"
+import { PREDICTION_MARKET_CONTRACT, UNISWAP_V3_AMM_CONTRACT, USDC_ADDRESS, type MarketData, type PoolData } from "@/lib/blockchain/contracts"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { useState } from "react"
@@ -10,14 +10,42 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { TradingInterface } from "@/components/markets/trading-interface"
 import { useTransactionContext } from "@/lib/transaction-provider"
-import { parseEther } from "viem"
+import { parseEther, parseUnits } from "viem"
+import { AssertMarket } from "@/components/markets/assert-market"
+import { SettleMarket } from "@/components/markets/settle-market"
+import { TokenBalances } from "@/components/markets/token-balances"
+import { formatUnits } from "viem"
+import Link from "next/link"
 
 export default function MarketDetails() {
-  const params = useParams()
-  const marketId = params.id as `0x${string}`
-  const [amount, setAmount] = useState("")
+  const params = useParams();
+  const marketId = params.id as `0x${string}`;
+  const [amount, setAmount] = useState("");
+  const [isApproving, setIsApproving] = useState(false);
 
   const { writeContract } = useTransactionContext()
+
+  const handleApproval = async () => {
+    if (!writeContract) return
+    setIsApproving(true)
+
+    writeContract({
+      address: USDC_ADDRESS,
+      abi: [{
+        name: 'approve',
+        type: 'function',
+        stateMutability: 'nonpayable',
+        inputs: [
+          { name: 'spender', type: 'address' },
+          { name: 'amount', type: 'uint256' }
+        ],
+        outputs: [{ type: 'bool' }]
+      }],
+      functionName: 'approve',
+      args: [PREDICTION_MARKET_CONTRACT.address, parseUnits(amount, 6)],
+    })
+    setIsApproving(false)
+  }
 
   const handleCreateTokens = (e: React.FormEvent) => {
     e.preventDefault()
@@ -27,19 +55,19 @@ export default function MarketDetails() {
       address: PREDICTION_MARKET_CONTRACT.address,
       abi: PREDICTION_MARKET_CONTRACT.abi,
       functionName: 'createOutcomeTokens',
-      args: [marketId, parseEther(amount)],
+      args: [marketId, parseUnits(amount, 6)],
     })
   }
 
   const { data: market } = useReadContract({
-    address: PREDICTION_MARKET_CONTRACT.address as `0x${string}`,
+    address: PREDICTION_MARKET_CONTRACT.address,
     abi: PREDICTION_MARKET_CONTRACT.abi,
     functionName: 'getMarket',
     args: [marketId],
   }) as { data: MarketData }
 
   const { data: pool } = useReadContract({
-    address: UNISWAP_V3_AMM_CONTRACT.address as `0x${string}`,
+    address: UNISWAP_V3_AMM_CONTRACT.address,
     abi: UNISWAP_V3_AMM_CONTRACT.abi,
     functionName: 'getPoolUsingMarketId',
     args: [marketId],
@@ -55,9 +83,15 @@ export default function MarketDetails() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Market Details</h1>
-        {!resolved && (
-          <Button variant="outline">Assert Outcome</Button>
-        )}
+        <div className="space-x-4">
+          {!resolved && (
+            <Button asChild variant="outline">
+              <Link href={`https://sepolia.basescan.org/address/${pool.pool}`} target="_blank">
+                View on Explorer
+              </Link>
+            </Button>
+          )}
+        </div>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
@@ -67,7 +101,7 @@ export default function MarketDetails() {
             <CardDescription>Current market status and outcomes</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
+            <div className="space-y-4">
               <div>
                 <p className="text-sm text-muted-foreground">Status</p>
                 <p className="font-medium">{resolved ? "Resolved" : "Active"}</p>
@@ -75,6 +109,10 @@ export default function MarketDetails() {
               <div>
                 <p className="text-sm text-muted-foreground">Pool Address</p>
                 <p className="font-mono text-sm truncate">{pool.pool}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Pool Fee</p>
+                <p className="font-medium">{(pool.fee / 10000).toFixed(2)}%</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Outcome 1</p>
@@ -94,6 +132,13 @@ export default function MarketDetails() {
           </CardContent>
         </Card>
 
+        <TokenBalances
+          outcome1Token={outcome1Token}
+          outcome2Token={outcome2Token}
+          outcome1={outcome1}
+          outcome2={outcome2}
+        />
+
         <Card>
           <CardHeader>
             <CardTitle>Create Tokens</CardTitle>
@@ -102,19 +147,35 @@ export default function MarketDetails() {
           <CardContent>
             <form onSubmit={handleCreateTokens} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="amount">Amount</Label>
+                <Label htmlFor="amount">Amount (USDC)</Label>
                 <Input
                   id="amount"
                   type="number"
+                  step="0.000001"
+                  min="0"
                   placeholder="0.0"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   required
                 />
+                <p className="text-sm text-muted-foreground">
+                  Enter the amount of USDC to create equal amounts of both outcome tokens
+                </p>
               </div>
-              <Button type="submit" className="w-full">
-                Create Tokens
-              </Button>
+              <div className="space-y-2">
+                <Button 
+                  type="button" 
+                  className="w-full"
+                  onClick={handleApproval}
+                  disabled={isApproving}
+                >
+                  {isApproving ? 'Approving...' : 'Approve USDC'}
+                </Button>
+                
+                <Button type="submit" className="w-full">
+                  Create Tokens
+                </Button>
+              </div>
             </form>
           </CardContent>
         </Card>
@@ -123,6 +184,17 @@ export default function MarketDetails() {
           marketId={marketId}
           outcome1={outcome1}
           outcome2={outcome2}
+        />
+
+        <AssertMarket
+          marketId={marketId}
+          outcome1={outcome1}
+          outcome2={outcome2}
+        />
+
+        <SettleMarket
+          marketId={marketId}
+          resolved={resolved}
         />
       </div>
     </div>
