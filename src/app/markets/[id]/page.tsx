@@ -10,12 +10,14 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { TradingInterface } from "@/components/markets/trading-interface"
 import { useTransactionContext } from "@/lib/transaction-provider"
-import { parseEther, parseUnits } from "viem"
+import { parseUnits, hexToString } from "viem/utils"
 import { AssertMarket } from "@/components/markets/assert-market"
 import { SettleMarket } from "@/components/markets/settle-market"
 import { TokenBalances } from "@/components/markets/token-balances"
-import { formatUnits } from "viem"
 import Link from "next/link"
+import { WinningOutcome } from "@/components/markets/winning-outcome"
+import { Badge } from "@/components/ui/badge"
+import { MarketActions } from "@/components/markets/market-actions"
 
 export default function MarketDetails() {
   const params = useParams();
@@ -74,129 +76,120 @@ export default function MarketDetails() {
   }) as { data: PoolData }
 
   if (!market || !pool) {
-    return <div>Loading market details...</div>
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="flex flex-col items-center gap-4">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+          <p className="text-muted-foreground">Loading market details...</p>
+        </div>
+      </div>
+    )
   }
 
-  const [resolved, outcome1Token, outcome2Token, outcome1, outcome2] = market
+  const [resolved, outcome1Token, outcome2Token, outcome1Bytes, outcome2Bytes] = market
+  
+  // Decode the bytes32 strings
+  const outcome1 = hexToString(outcome1Bytes)
+  const outcome2 = hexToString(outcome2Bytes)
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Market Details</h1>
-        <div className="space-x-4">
-          {!resolved && (
-            <Button asChild variant="outline">
-              <Link href={`https://sepolia.basescan.org/address/${pool.pool}`} target="_blank">
-                View on Explorer
-              </Link>
-            </Button>
-          )}
+    <div className="container mx-auto py-8 space-y-8">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 className="text-4xl font-bold tracking-tight">Prediction Market</h1>
+          <p className="text-muted-foreground mt-2">
+            {outcome1} vs {outcome2}
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <Badge variant={resolved ? "secondary" : "default"}>
+            {resolved ? "Resolved" : "Active"}
+          </Badge>
+          <Button asChild variant="outline">
+            <Link href={`https://sepolia.basescan.org/address/${pool.pool}`} target="_blank">
+              View on Explorer
+            </Link>
+          </Button>
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Market Info</CardTitle>
-            <CardDescription>Current market status and outcomes</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div>
-                <p className="text-sm text-muted-foreground">Status</p>
-                <p className="font-medium">{resolved ? "Resolved" : "Active"}</p>
+      {/* Main Content */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        {/* Market Info and Trading Section */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Market Info Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Market Information</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-sm font-medium">Pool Address</p>
+                    <p className="font-mono text-sm text-muted-foreground truncate">{pool.pool}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">Pool Fee</p>
+                    <p className="text-2xl font-bold">{(pool.fee / 10000).toFixed(2)}%</p>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-sm font-medium">Outcome Tokens</p>
+                    <div className="mt-2 space-y-2">
+                      <div className="p-3 rounded-lg bg-secondary">
+                        <p className="font-medium">{outcome1}</p>
+                        <p className="text-xs text-muted-foreground truncate">{outcome1Token}</p>
+                      </div>
+                      <div className="p-3 rounded-lg bg-secondary">
+                        <p className="font-medium">{outcome2}</p>
+                        <p className="text-xs text-muted-foreground truncate">{outcome2Token}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Pool Address</p>
-                <p className="font-mono text-sm truncate">{pool.pool}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Pool Fee</p>
-                <p className="font-medium">{(pool.fee / 10000).toFixed(2)}%</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Outcome 1</p>
-                <p className="font-medium">{outcome1}</p>
-                <p className="font-mono text-sm truncate text-muted-foreground">
-                  Token: {outcome1Token}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Outcome 2</p>
-                <p className="font-medium">{outcome2}</p>
-                <p className="font-mono text-sm truncate text-muted-foreground">
-                  Token: {outcome2Token}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        <TokenBalances
-          outcome1Token={outcome1Token}
-          outcome2Token={outcome2Token}
-          outcome1={outcome1}
-          outcome2={outcome2}
-        />
+          {/* Trading Interface */}
+          <Card>
+            <TradingInterface
+              marketId={marketId}
+              outcome1={outcome1}
+              outcome2={outcome2}
+            />
+          </Card>
+        </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Create Tokens</CardTitle>
-            <CardDescription>Create outcome tokens to trade</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleCreateTokens} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="amount">Amount (USDC)</Label>
-                <Input
-                  id="amount"
-                  type="number"
-                  step="0.000001"
-                  min="0"
-                  placeholder="0.0"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  required
-                />
-                <p className="text-sm text-muted-foreground">
-                  Enter the amount of USDC to create equal amounts of both outcome tokens
-                </p>
-              </div>
-              <div className="space-y-2">
-                <Button 
-                  type="button" 
-                  className="w-full"
-                  onClick={handleApproval}
-                  disabled={isApproving}
-                >
-                  {isApproving ? 'Approving...' : 'Approve USDC'}
-                </Button>
-                
-                <Button type="submit" className="w-full">
-                  Create Tokens
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
+        {/* Right Sidebar */}
+        <div className="space-y-6">
+          {/* Winning Outcome Card */}
+          <WinningOutcome 
+            poolAddress={pool.pool}
+            outcome1={outcome1}
+            outcome2={outcome2}
+          />
 
-        <TradingInterface
-          marketId={marketId}
-          outcome1={outcome1}
-          outcome2={outcome2}
-        />
-
-        <AssertMarket
-          marketId={marketId}
-          outcome1={outcome1}
-          outcome2={outcome2}
-        />
-
-        <SettleMarket
-          marketId={marketId}
-          resolved={resolved}
-        />
+          {/* Token Balances */}
+          <TokenBalances
+            outcome1Token={outcome1Token}
+            outcome2Token={outcome2Token}
+            outcome1={outcome1}
+            outcome2={outcome2}
+          />
+        </div>
       </div>
+
+      {/* Market Actions Section */}
+      <MarketActions
+        marketId={marketId}
+        outcome1={outcome1}
+        outcome2={outcome2}
+        resolved={resolved}
+      />
     </div>
   )
 } 
