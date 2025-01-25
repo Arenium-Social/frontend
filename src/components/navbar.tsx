@@ -16,46 +16,21 @@ import { DynamicWidget } from "@dynamic-labs/sdk-react-core"
 import { Sword, Trophy, Ticket, TrendingUp, Menu, X } from "lucide-react"
 import { ModeToggle } from "./themebutton"
 
-const markets: { title: string; href: string; description: string; icon: React.ReactNode }[] = [
+const navigationItems: { title: string; href: string; icon: React.ReactNode }[] = [
   {
-    title: "Memecoin Markets",
-    href: "#",
-    description: "Predict and bet on price movements of Arena-launched memecoins.",
+    title: "Markets",
+    href: "/",
     icon: <TrendingUp className="w-4 h-4 text-[#d64d06]" />
   },
   {
-    title: "Ticket Markets",
-    href: "#",
-    description: "Trade predictions on user ticket values within The Arena ecosystem.",
-    icon: <Ticket className="w-4 h-4 text-[#d64d06]" />
-  },
-  {
-    title: "Event Markets",
-    href: "#",
-    description: "Participate in predictions for sports and cultural events.",
-    icon: <Trophy className="w-4 h-4 text-[#d64d06]" />
+    title: "Create",
+    href: "/markets/create",
+    icon: <Sword className="w-4 h-4 text-[#d64d06]" />
   }
 ]
 
 export default function NavBar() {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false)
-
-  const scrollToSection = (elementId: string) => {
-    const element = document.getElementById(elementId)
-    if (element) {
-      const offset = 80
-      const bodyRect = document.body.getBoundingClientRect().top
-      const elementRect = element.getBoundingClientRect().top
-      const elementPosition = elementRect - bodyRect
-      const offsetPosition = elementPosition - offset
-
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: 'smooth'
-      })
-      setIsMenuOpen(false)
-    }
-  }
 
   return (
     <nav className="fixed w-full border-b border-[#d64d06]/20 backdrop-blur-lg z-50 bg-background/80">
@@ -74,61 +49,30 @@ export default function NavBar() {
           <div className="hidden md:flex flex-1 justify-center">
             <NavigationMenu>
               <NavigationMenuList className="gap-4">
-                <NavigationMenuItem>
-                  <NavigationMenuTrigger className="text-foreground/70 hover:text-foreground">
-                    Markets
-                  </NavigationMenuTrigger>
-                  <NavigationMenuContent>
-                    <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-1">
-                      {markets.map((market) => (
-                        <ListItem
-                          key={market.title}
-                          title={market.title}
-                          href={market.href}
-                          icon={market.icon}
-                        >
-                          {market.description}
-                        </ListItem>
-                      ))}
-                    </ul>
-                  </NavigationMenuContent>
-                </NavigationMenuItem>
-
-                <NavigationMenuItem>
-                  <button 
-                    onClick={() => scrollToSection('features')}
-                    className={cn(navigationMenuTriggerStyle(), "text-foreground/70 hover:text-foreground")}
-                  >
-                    Features
-                  </button>
-                </NavigationMenuItem>
-
-                <NavigationMenuItem>
-                  <button 
-                    onClick={() => scrollToSection('how-it-works')}
-                    className={cn(navigationMenuTriggerStyle(), "text-foreground/70 hover:text-foreground")}
-                  >
-                    How It Works
-                  </button>
-                </NavigationMenuItem>
+                {navigationItems.map((item) => (
+                  <NavigationMenuItem key={item.title}>
+                    <Link href={item.href} legacyBehavior passHref>
+                      <NavigationMenuLink className={cn(navigationMenuTriggerStyle(), "text-foreground/70 hover:text-foreground")}>
+                        {item.title}
+                      </NavigationMenuLink>
+                    </Link>
+                  </NavigationMenuItem>
+                ))}
               </NavigationMenuList>
             </NavigationMenu>
           </div>
 
           {/* Dynamic Widget - Right */}
           <div className="shrink-0 w-[150px] flex justify-end items-center gap-2">
-            {/* Hamburger for mobile */}
             <button 
               className="md:hidden text-foreground/70 hover:text-foreground"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
               {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
-            {/* Theme button for desktop */}
             <div className="hidden md:block">
               <ModeToggle />
             </div>
-            {/* Widget for desktop */}
             <div className="hidden md:block">
               <DynamicWidget innerButtonComponent={<p>Login</p>} />
             </div>
@@ -139,39 +83,20 @@ export default function NavBar() {
         {isMenuOpen && (
           <div className="md:hidden border-t border-[#d64d06]/20">
             <div className="flex flex-col py-4 space-y-4">
-              <div className="px-4">
-                <button 
-                  className="text-foreground/70 hover:text-foreground w-full text-left py-2"
+              {navigationItems.map((item) => (
+                <Link
+                  key={item.title}
+                  href={item.href}
+                  className="flex items-center gap-2 px-4 text-foreground/70 hover:text-foreground py-2"
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  Markets
-                </button>
-                <div className="pl-4 space-y-2 mt-2">
-                  {markets.map((market) => (
-                    <a 
-                      key={market.title}
-                      href={market.href}
-                      className="flex items-center gap-2 text-foreground/70 hover:text-foreground py-1"
-                    >
-                      {market.icon}
-                      <span>{market.title}</span>
-                    </a>
-                  ))}
-                </div>
+                  {item.icon}
+                  <span>{item.title}</span>
+                </Link>
+              ))}
+              <div className="px-4">
+                <ModeToggle />
               </div>
-              <button 
-                onClick={() => scrollToSection('features')}
-                className="px-4 text-foreground/70 hover:text-foreground text-left py-2"
-              >
-                Features
-              </button>
-              <button 
-                onClick={() => scrollToSection('how-it-works')}
-                className="px-4 text-foreground/70 hover:text-foreground text-left py-2"
-              >
-                How It Works
-              </button>
-              <ModeToggle />
               <div className="px-4 pt-2">
                 <DynamicWidget />
               </div>
@@ -182,33 +107,4 @@ export default function NavBar() {
     </nav>
   )
 }
-
-const ListItem = React.forwardRef<
-  React.ElementRef<"a">,
-  React.ComponentPropsWithoutRef<"a"> & { icon?: React.ReactNode }
->(({ className, title, children, icon, ...props }, ref) => {
-  return (
-    <li>
-      <NavigationMenuLink asChild>
-        <a
-          ref={ref}
-          className={cn(
-            "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-[#d64d06]/10",
-            className
-          )}
-          {...props}
-        >
-          <div className="flex items-center gap-2 mb-2">
-            {icon}
-            <div className="text-sm font-medium leading-none text-[#d64d06]">{title}</div>
-          </div>
-          <p className="line-clamp-2 text-sm leading-snug text-white/70">
-            {children}
-          </p>
-        </a>
-      </NavigationMenuLink>
-    </li>
-  )
-})
-ListItem.displayName = "ListItem"
 

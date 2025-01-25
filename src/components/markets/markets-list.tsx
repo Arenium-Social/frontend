@@ -16,8 +16,8 @@ interface PoolData {
 }
 
 export function MarketsList() {
-  const { data: pools, isLoading } = useReadContract({
-    address: UNISWAP_V3_AMM_CONTRACT.address as `0x${string}`,
+  const { data: pools, isLoading, isError, error } = useReadContract({
+    address: UNISWAP_V3_AMM_CONTRACT.address,
     abi: UNISWAP_V3_AMM_CONTRACT.abi,
     functionName: 'getAllPools',
   })
@@ -25,6 +25,13 @@ export function MarketsList() {
   if (isLoading) {
     return <div>Loading markets...</div>
   }
+
+  if (isError) {
+    console.error('Error fetching pools:', error)
+    return <div>Error loading markets. Please try again.</div>
+  }
+
+  console.log('Pools data:', pools)
 
   if (!pools || !Array.isArray(pools) || pools.length === 0) {
     return (
